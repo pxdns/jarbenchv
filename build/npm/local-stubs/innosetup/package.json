@@ -1,0 +1,7 @@
+{
+  "name": "innosetup",
+  "version": "6.4.1",
+  "description": "Local no-op stub for the real 'innosetup' npm package. innosetup bundles the Windows Inno Setup Compiler (iscc.exe), only used when building the Windows .exe installer — never invoked by this macOS JarBench dev build. The real package's tarball bundles a Windows executable, which this network's security gateway blocks in transit; this stub exists so 'npm install' can complete for macOS development without needing that download. Do not use this for an actual Windows installer build.",
+  "main": "index.js",
+  "license": "MIT"
+}

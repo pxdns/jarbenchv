@@ -1,0 +1,7 @@
+{
+  "name": "rcedit",
+  "version": "4.0.1",
+  "description": "Local no-op stub for the real 'rcedit' npm package. rcedit edits resource metadata (icon, version info) in a Windows .exe — it only runs during Windows installer packaging, which this macOS JarBench dev build never performs. The real package's tarball bundles a Windows executable, which this network's security gateway blocks/resets in transit; this stub exists so 'npm install' can complete for macOS development without needing that download. Do not use this for an actual Windows package build.",
+  "main": "index.js",
+  "license": "MIT"
+}

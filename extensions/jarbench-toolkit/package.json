@@ -1,0 +1,197 @@
+{
+  "name": "jarbench-toolkit",
+  "displayName": "%displayName%",
+  "description": "%description%",
+  "version": "1.0.0",
+  "publisher": "jarbench",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "scripts": {
+    "compile": "gulp compile-extension:jarbench-toolkit",
+    "watch": "gulp watch-extension:jarbench-toolkit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "24.x"
+  },
+  "main": "./out/extension",
+  "activationEvents": [
+    "onTaskType:gradle",
+    "workspaceContains:build.gradle",
+    "workspaceContains:build.gradle.kts",
+    "workspaceContains:settings.gradle",
+    "workspaceContains:settings.gradle.kts",
+    "onCustomEditor:jarbench.jarViewer",
+    "onLanguage:java"
+  ],
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "%workspaceTrust%"
+    }
+  },
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "jarbench.jarViewer",
+        "displayName": "%customEditor.jarViewer.displayName%",
+        "priority": "default",
+        "selector": [
+          { "filenamePattern": "*.jar" }
+        ]
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "jarbenchInsights",
+          "name": "%view.insights.name%",
+          "icon": "$(archive)",
+          "contextualTitle": "%view.insights.contextualTitle%"
+        },
+        {
+          "id": "jarbenchGradleTasks",
+          "name": "%view.gradleTasks.name%",
+          "icon": "$(tools)",
+          "contextualTitle": "%view.gradleTasks.contextualTitle%"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "jarbench.rescanWorkspace",
+        "title": "%command.rescanWorkspace%",
+        "category": "JarBench",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "jarbench.installJava",
+        "title": "%command.installJava%",
+        "category": "JarBench"
+      },
+      {
+        "command": "jarbench.analyzeJar",
+        "title": "%command.analyzeJar%",
+        "category": "JarBench"
+      },
+      {
+        "command": "jarbench.refreshGradleTasks",
+        "title": "%command.refreshGradleTasks%",
+        "category": "JarBench",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "jarbench.openVanillaWindow",
+        "title": "%command.openVanillaWindow%",
+        "category": "JarBench"
+      },
+      {
+        "command": "jarbench.runGradleTask",
+        "title": "%command.runGradleTask%",
+        "category": "JarBench",
+        "icon": "$(play)"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        { "command": "jarbench.rescanWorkspace" },
+        { "command": "jarbench.installJava" },
+        { "command": "jarbench.analyzeJar" },
+        { "command": "jarbench.refreshGradleTasks" },
+        { "command": "jarbench.runGradleTask", "when": "false" },
+        { "command": "jarbench.openVanillaWindow" }
+      ],
+      "view/title": [
+        {
+          "command": "jarbench.rescanWorkspace",
+          "when": "view == jarbenchInsights",
+          "group": "navigation"
+        },
+        {
+          "command": "jarbench.refreshGradleTasks",
+          "when": "view == jarbenchGradleTasks",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "jarbench.runGradleTask",
+          "when": "view == jarbenchGradleTasks && viewItem == jarbenchGradleTask",
+          "group": "inline"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "jarbench.analyzeJar",
+          "when": "resourceExtname == .jar",
+          "group": "navigation"
+        }
+      ]
+    },
+    "taskDefinitions": [
+      {
+        "type": "gradle",
+        "required": [ "task" ],
+        "properties": {
+          "task": {
+            "type": "string",
+            "description": "%taskdef.task%"
+          },
+          "rootPath": {
+            "type": "string",
+            "description": "%taskdef.rootPath%"
+          }
+        },
+        "when": "shellExecutionSupported"
+      }
+    ],
+    "configuration": {
+      "id": "jarbench",
+      "type": "object",
+      "title": "JarBench",
+      "properties": {
+        "jarbench.javaHome": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "markdownDescription": "%config.javaHome%"
+        },
+        "jarbench.autoDetectJava": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "%config.autoDetectJava%"
+        },
+        "jarbench.gradleAutoDetect": {
+          "type": "string",
+          "enum": [ "off", "on" ],
+          "default": "on",
+          "scope": "resource",
+          "description": "%config.gradleAutoDetect%"
+        },
+        "jarbench.jarFingerprintDb": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "markdownDescription": "%config.jarFingerprintDb%"
+        },
+        "jarbench.recommendJavaExtensionPack": {
+          "type": "boolean",
+          "default": true,
+          "scope": "application",
+          "description": "%config.recommendJavaExtensionPack%"
+        }
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
+  }
+}

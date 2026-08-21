@@ -1,0 +1,8 @@
+{
+  "name": "@vscode/windows-process-tree",
+  "version": "0.8.0",
+  "description": "Local no-op stub for the real '@vscode/windows-process-tree' npm package. It's a Windows-only native addon (queries the Win32 process tree) — every call site in this codebase is guarded by process.platform === 'win32' / platform.isWindows, so it is never actually invoked on macOS. The real package would also fail to compile here (it needs the Windows SDK). Its tarball also bundles a native binary that this network's security gateway blocks in transit; this stub exists so 'npm install' can complete for macOS development. Do not use this for an actual Windows build.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "license": "MIT"
+}

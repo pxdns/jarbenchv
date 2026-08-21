@@ -1,0 +1,34 @@
+{
+  "name": "theme-jarbench",
+  "displayName": "JarBench Theme",
+  "description": "JarBench Forge and JarBench Forge Light — the JarBench color themes.",
+  "version": "1.0.0",
+  "publisher": "jarbench",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Themes"
+  ],
+  "contributes": {
+    "themes": [
+      {
+        "id": "JarBench Forge",
+        "label": "JarBench Forge",
+        "uiTheme": "vs-dark",
+        "path": "./themes/jarbench-forge-color-theme.json"
+      },
+      {
+        "id": "JarBench Forge Light",
+        "label": "JarBench Forge Light",
+        "uiTheme": "vs",
+        "path": "./themes/jarbench-forge-light-color-theme.json"
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
+  }
+}

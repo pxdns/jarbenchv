@@ -1,0 +1,23 @@
+{
+  "displayName": "JarBench Toolkit",
+  "description": "Gradle tasks, Java runtime setup, and Minecraft/Eaglercraft jar & source identification.",
+  "workspaceTrust": "Running Gradle tasks and installing a JDK requires a trusted workspace.",
+  "customEditor.jarViewer.displayName": "JarBench Jar Viewer",
+  "view.insights.name": "JarBench Insights",
+  "view.insights.contextualTitle": "JarBench",
+  "view.gradleTasks.name": "Gradle Tasks",
+  "view.gradleTasks.contextualTitle": "JarBench",
+  "command.rescanWorkspace": "Rescan Workspace",
+  "command.installJava": "Install/Configure Java",
+  "command.analyzeJar": "Analyze Jar",
+  "command.refreshGradleTasks": "Refresh Gradle Tasks",
+  "command.runGradleTask": "Run Gradle Task",
+  "command.openVanillaWindow": "Open Window Without Java Tools",
+  "taskdef.task": "The Gradle task to run.",
+  "taskdef.rootPath": "The path to the folder containing the Gradle project, defaults to the workspace folder.",
+  "config.javaHome": "Path to the JDK JarBench should use for Gradle builds and jar inspection. Leave empty to auto-detect (`JAVA_HOME`, `PATH`, or an install JarBench manages).",
+  "config.autoDetectJava": "Automatically look for a usable JDK and offer to install one when none is found.",
+  "config.gradleAutoDetect": "Controls whether JarBench scans for Gradle build files and exposes their tasks as VS Code tasks.",
+  "config.jarFingerprintDb": "Path to a JSON file of known jar SHA-256 fingerprints (see the extension's data/jar-fingerprints.json for the format). Leave empty to use the bundled (empty) default.",
+  "config.recommendJavaExtensionPack": "Offer to install the Extension Pack for Java (diagnostics, completion, navigation, refactoring) the first time a .java file is opened."
+}

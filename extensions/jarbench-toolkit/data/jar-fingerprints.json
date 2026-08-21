@@ -1,0 +1,11 @@
+{
+  "$schema": "./jar-fingerprints.schema.json",
+  "description": "Known jar SHA-256 fingerprints, keyed by the lowercase hex digest of the whole jar file. Ships empty: JarBench does not fabricate hashes it hasn't verified. Add entries here (or point jarbench.jarFingerprintDb at your own copy of this file) as you positively identify real jars.",
+  "format": {
+    "<sha256-hex>": {
+      "label": "Human-readable identification, e.g. 'Eaglercraft 1.8.8 client'",
+      "notes": "Optional free text: where this jar came from, how it was verified, version numbers, etc."
+    }
+  },
+  "entries": {}
+}
