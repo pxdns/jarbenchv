@@ -4,7 +4,7 @@
 
 const ProcessDataFlag = {
 	None: 0,
-	MemoryUsage: 1,
+	Memory: 1,
 	CommandLine: 2
 };
 
@@ -16,4 +16,8 @@ function getProcessList(_rootPid, callback) {
 	callback(undefined);
 }
 
-module.exports = { ProcessDataFlag, getProcessTree, getProcessList };
+function getProcessCpuUsage(_processList, callback) {
+	callback([]);
+}
+
+module.exports = { ProcessDataFlag, getProcessTree, getProcessList, getProcessCpuUsage };

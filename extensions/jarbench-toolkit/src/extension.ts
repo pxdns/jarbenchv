@@ -15,7 +15,7 @@ export function activate(context: vscode.ExtensionContext): void {
 	registerJavaExtensionPrompt(context);
 	registerLaunchModeCommands(context);
 
-	const gradleDetector = new GradleTaskDetector();
+	const gradleDetector = new GradleTaskDetector(context);
 	gradleDetector.start();
 	context.subscriptions.push(gradleDetector);
 

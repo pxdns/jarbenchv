@@ -10,6 +10,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as cp from 'child_process';
 import * as vscode from 'vscode';
+import { findJavaHome } from '../java/javaRuntime';
 
 type AutoDetect = 'on' | 'off';
 
@@ -91,11 +92,37 @@ export function parseGradleTasksOutput(stdout: string): { name: string; descript
 class FolderDetector {
 	private fileWatcher: vscode.FileSystemWatcher | undefined;
 	private promise: Thenable<vscode.Task[]> | undefined;
+	private _lastError: string | undefined;
 
 	constructor(
+		private readonly _context: vscode.ExtensionContext,
 		private readonly _workspaceFolder: vscode.WorkspaceFolder,
 		private readonly _gradleCommand: Promise<string>
 	) { }
+
+	/** Set when the last `gradlew tasks` run failed for a folder that does have Gradle files — as opposed to genuinely having none. */
+	public get lastError(): string | undefined {
+		return this._lastError;
+	}
+
+	private async execEnv(): Promise<{ [key: string]: string }> {
+		const base: { [key: string]: string } = {};
+		for (const [key, value] of Object.entries(process.env)) {
+			if (value !== undefined) {
+				base[key] = value;
+			}
+		}
+		const javaHome = await findJavaHome(this._context, this._workspaceFolder);
+		if (!javaHome) {
+			return base;
+		}
+		const javaBinDir = path.join(javaHome, 'bin');
+		return {
+			...base,
+			JAVA_HOME: javaHome,
+			PATH: `${javaBinDir}${path.delimiter}${base.PATH ?? ''}`
+		};
+	}
 
 	public get workspaceFolder(): vscode.WorkspaceFolder {
 		return this._workspaceFolder;
@@ -137,7 +164,7 @@ class FolderDetector {
 		if (!definition.task) {
 			return undefined;
 		}
-		const options: vscode.ShellExecutionOptions = { cwd: this.workspaceFolder.uri.fsPath };
+		const options: vscode.ShellExecutionOptions = { cwd: this.workspaceFolder.uri.fsPath, env: await this.execEnv() };
 		return new vscode.Task(definition, this.workspaceFolder, definition.task, 'gradle',
 			new vscode.ShellExecution(await this._gradleCommand, [definition.task, '--console=plain'], options));
 	}
@@ -152,6 +179,7 @@ class FolderDetector {
 	}
 
 	private async computeTasks(): Promise<vscode.Task[]> {
+		this._lastError = undefined;
 		const rootPath = this._workspaceFolder.uri.scheme === 'file' ? this._workspaceFolder.uri.fsPath : undefined;
 		if (!rootPath || !await this.hasGradleProject(rootPath)) {
 			return [];
@@ -159,8 +187,9 @@ class FolderDetector {
 
 		const gradleCommand = await this._gradleCommand;
 		const commandLine = `${gradleCommand} tasks --all --console=plain`;
+		const env = await this.execEnv();
 		try {
-			const { stdout, stderr } = await exec(commandLine, { cwd: rootPath });
+			const { stdout, stderr } = await exec(commandLine, { cwd: rootPath, env });
 			if (stderr && stderr.trim().length > 0) {
 				getOutputChannel().appendLine(stderr);
 			}
@@ -168,7 +197,7 @@ class FolderDetector {
 			const result: vscode.Task[] = [];
 			for (const { name, description } of parsed) {
 				const definition: GradleTaskDefinition = { type: 'gradle', task: name, rootPath };
-				const options: vscode.ShellExecutionOptions = { cwd: rootPath };
+				const options: vscode.ShellExecutionOptions = { cwd: rootPath, env };
 				const task = new vscode.Task(definition, this.workspaceFolder, name, 'gradle',
 					new vscode.ShellExecution(gradleCommand, [name, '--console=plain'], options));
 				task.detail = description;
@@ -179,13 +208,20 @@ class FolderDetector {
 				}
 				result.push(task);
 			}
+			if (result.length === 0 && stdout.trim().length > 0) {
+				// hasGradleProject() was true but nothing parsed as a task — surface the raw output rather than a silent empty list.
+				this._lastError = vscode.l10n.t('gradlew ran but no tasks could be parsed from its output. See the "JarBench: Gradle" output channel.');
+				getOutputChannel().appendLine(stdout);
+			}
 			return result;
 		} catch (err: any) {
 			const channel = getOutputChannel();
+			const detail: string = err.stderr?.trim() || err.stdout?.trim() || (err.error ? String(err.error) : 'unknown error');
 			if (err.stderr) {
 				channel.appendLine(err.stderr);
 			}
-			channel.appendLine(vscode.l10n.t('Auto detecting Gradle tasks for folder {0} failed: {1}', this.workspaceFolder.name, err.error ? String(err.error) : 'unknown error'));
+			channel.appendLine(vscode.l10n.t('Auto detecting Gradle tasks for folder {0} failed: {1}', this.workspaceFolder.name, detail));
+			this._lastError = detail;
 			return [];
 		}
 	}
@@ -194,6 +230,8 @@ class FolderDetector {
 export class GradleTaskDetector implements vscode.Disposable {
 	private taskProvider: vscode.Disposable | undefined;
 	private readonly detectors = new Map<string, FolderDetector>();
+
+	constructor(private readonly context: vscode.ExtensionContext) { }
 
 	public start(): void {
 		const folders = vscode.workspace.workspaceFolders;
@@ -222,7 +260,7 @@ export class GradleTaskDetector implements vscode.Disposable {
 			if (this.detectors.has(add.uri.toString())) {
 				continue;
 			}
-			const detector = new FolderDetector(add, findGradleCommand(add.uri.fsPath));
+			const detector = new FolderDetector(this.context, add, findGradleCommand(add.uri.fsPath));
 			this.detectors.set(add.uri.toString(), detector);
 			if (detector.isEnabled()) {
 				detector.start();
@@ -261,6 +299,11 @@ export class GradleTaskDetector implements vscode.Disposable {
 	/** Used by the sidebar tree view, which needs the full task list independent of the TaskProvider protocol. */
 	public getAllTasks(): Promise<vscode.Task[]> {
 		return this.computeAllTasks();
+	}
+
+	/** Error from the last `gradlew tasks` run for a folder that does have Gradle files but failed to list them — undefined otherwise. */
+	public lastErrorFor(folder: vscode.WorkspaceFolder): string | undefined {
+		return this.detectors.get(folder.uri.toString())?.lastError;
 	}
 
 	/** Forces the next getAllTasks()/provideTasks() call to re-run `gradlew tasks` instead of using the cached result. */

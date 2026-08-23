@@ -78,6 +78,7 @@ export class GradleTasksViewProvider implements vscode.TreeDataProvider<TreeNode
 		}
 		if (element instanceof MessageNode) {
 			const item = new vscode.TreeItem(element.message, vscode.TreeItemCollapsibleState.None);
+			item.tooltip = element.message;
 			item.contextValue = 'jarbenchGradleMessage';
 			return item;
 		}
@@ -119,6 +120,10 @@ export class GradleTasksViewProvider implements vscode.TreeDataProvider<TreeNode
 		const allTasks = await this.detector.getAllTasks().catch(() => []);
 		const tasks = allTasks.filter(t => t.scope === folder);
 		if (tasks.length === 0) {
+			const error = this.detector.lastErrorFor(folder);
+			if (error) {
+				return [new MessageNode(vscode.l10n.t('Found Gradle files, but gradlew failed: {0}', error))];
+			}
 			return [new MessageNode(vscode.l10n.t('No Gradle project detected here.'))];
 		}
 		const byGroup = new Map<string, vscode.Task[]>();
